@@ -3,7 +3,24 @@ import { createSupabaseServerClient } from "../../../lib/supabaseServer";
 
 const SINGLE_ROW_ID = 1;
 
-export async function GET() {
+function checkSession(request) {
+  const sessionToken = process.env.VAULT_SESSION_TOKEN;
+  if (!sessionToken) return false;
+
+  const cookie = request.cookies.get("vault_session");
+  if (!cookie) return false;
+
+  return cookie.value === sessionToken;
+}
+
+export async function GET(request) {
+  if (!checkSession(request)) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
   const supabase = createSupabaseServerClient();
 
   const { data, error } = await supabase
@@ -35,6 +52,13 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  if (!checkSession(request)) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
   const body = await request.json();
   const supabase = createSupabaseServerClient();
 
