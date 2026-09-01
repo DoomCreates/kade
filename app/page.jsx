@@ -159,6 +159,11 @@ export default function HomePage() {
             type="password"
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleUnlock();
+              }
+            }}
             placeholder={step === 1 ? "enter first phrase" : "enter second phrase"}
             style={{
               width: "100%",
@@ -393,14 +398,4 @@ export default function HomePage() {
               backgroundColor: saving ? "#555" : "#fff",
               color: "#000",
               fontWeight: "bold",
-              border: "none",
-              cursor: saving ? "default" : "pointer"
-            }}
-          >
-            {saving ? "saving…" : "save"}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+              border
