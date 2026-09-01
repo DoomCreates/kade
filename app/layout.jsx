@@ -10,16 +10,33 @@ export default function RootLayout({ children }) {
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              const title = "Kirby's Vault";
-              let i = 0;
-              function typeTitle() {
-                document.title = title.substring(0, i);
-                i++;
-                if (i <= title.length) {
-                  setTimeout(typeTitle, 150);
+              const titles = [
+                "Kirby's vault",
+                "Kirby's vault.",
+                "Kirby's vault..",
+                "Kirby's vault...",
+                "Kirby's vault",
+              ];
+
+              let index = 0;
+              let charIndex = 0;
+              let current = titles[index];
+
+              function typeCycle() {
+                document.title = current.substring(0, charIndex);
+                charIndex++;
+
+                if (charIndex > current.length) {
+                  index = (index + 1) % titles.length;
+                  current = titles[index];
+                  charIndex = 0;
+                  setTimeout(typeCycle, 500);
+                } else {
+                  setTimeout(typeCycle, 150);
                 }
               }
-              typeTitle();
+
+              typeCycle();
             `,
           }}
         />
@@ -29,7 +46,7 @@ export default function RootLayout({ children }) {
         style={{
           margin: 0,
           padding: 0,
-          background: "radial-gradient(circle at top, #0a0a0a, #000)",
+          backgroundColor: "#000",
           color: "#fff",
           fontFamily: "Inter, system-ui, sans-serif",
           overflowX: "hidden",
