@@ -26,6 +26,10 @@ export default function HomePage() {
   const [imagesTitle, setImagesTitle] = useState("Images");
   const [imageText, setImageText] = useState("");
 
+  const [planner, setPlanner] = useState(
+    Array.from({ length: 8 }, () => ({ label: "", text: "" }))
+  );
+
   useEffect(() => {
     if (!unlocked) return;
 
@@ -49,6 +53,11 @@ export default function HomePage() {
 
         setImagesTitle(data.images_title);
         setImageText((data.images || []).join("\n"));
+
+        setPlanner(
+          data.planner ||
+            Array.from({ length: 8 }, () => ({ label: "", text: "" }))
+        );
       } catch (e) {
         setError("Failed to load content");
       }
@@ -89,7 +98,8 @@ export default function HomePage() {
           text2_title: text2Title,
           text2,
           images_title: imagesTitle,
-          images
+          images,
+          planner
         })
       });
 
@@ -293,6 +303,56 @@ export default function HomePage() {
                 color: "#fff"
               }}
             />
+          </section>
+
+          {/* PLANNER */}
+          <section style={{ marginBottom: "2rem" }}>
+            <h2 style={{ marginBottom: "1rem" }}>Planner</h2>
+
+            {planner.map((row, index) => (
+              <div
+                key={index}
+                style={{
+                  display: "flex",
+                  gap: "1rem",
+                  marginBottom: "1rem"
+                }}
+              >
+                <input
+                  value={row.label}
+                  onChange={(e) => {
+                    const updated = [...planner];
+                    updated[index].label = e.target.value;
+                    setPlanner(updated);
+                  }}
+                  placeholder={`Label ${index + 1}`}
+                  style={{
+                    width: "25%",
+                    padding: "0.5rem",
+                    backgroundColor: "#111",
+                    border: "1px solid #444",
+                    color: "#fff"
+                  }}
+                />
+
+                <input
+                  value={row.text}
+                  onChange={(e) => {
+                    const updated = [...planner];
+                    updated[index].text = e.target.value;
+                    setPlanner(updated);
+                  }}
+                  placeholder={`Text ${index + 1}`}
+                  style={{
+                    width: "75%",
+                    padding: "0.5rem",
+                    backgroundColor: "#111",
+                    border: "1px solid #444",
+                    color: "#fff"
+                  }}
+                />
+              </div>
+            ))}
           </section>
 
           <button
