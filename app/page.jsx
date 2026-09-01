@@ -11,38 +11,51 @@ export default function HomePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
+  const [header1Title, setHeader1Title] = useState("Header 1");
   const [header1, setHeader1] = useState("");
+
+  const [text1Title, setText1Title] = useState("Text 1");
   const [text1, setText1] = useState("");
+
+  const [header2Title, setHeader2Title] = useState("Header 2");
   const [header2, setHeader2] = useState("");
+
+  const [text2Title, setText2Title] = useState("Text 2");
   const [text2, setText2] = useState("");
-  const [imageText, setImageText] = useState(""); // newline-separated URLs
+
+  const [imagesTitle, setImagesTitle] = useState("Images");
+  const [imageText, setImageText] = useState("");
 
   useEffect(() => {
     if (!unlocked) return;
 
-    const fetchContent = async () => {
+    const load = async () => {
       setLoading(true);
-      setError(null);
       try {
         const res = await fetch("/api/content");
         const data = await res.json();
-        if (res.ok) {
-          setHeader1(data.header1 || "");
-          setText1(data.text1 || "");
-          setHeader2(data.header2 || "");
-          setText2(data.text2 || "");
-          setImageText((data.images || []).join("\n"));
-        } else {
-          setError(data.error || "Failed to load content");
-        }
+
+        setHeader1Title(data.header1_title);
+        setHeader1(data.header1);
+
+        setText1Title(data.text1_title);
+        setText1(data.text1);
+
+        setHeader2Title(data.header2_title);
+        setHeader2(data.header2);
+
+        setText2Title(data.text2_title);
+        setText2(data.text2);
+
+        setImagesTitle(data.images_title);
+        setImageText((data.images || []).join("\n"));
       } catch (e) {
-        setError("Network error while loading content");
-      } finally {
-        setLoading(false);
+        setError("Failed to load content");
       }
+      setLoading(false);
     };
 
-    fetchContent();
+    load();
   }, [unlocked]);
 
   const handleUnlock = () => {
@@ -56,33 +69,37 @@ export default function HomePage() {
   const handleSave = async () => {
     setSaving(true);
     setError(null);
-    try {
-      const images = imageText
-        .split("\n")
-        .map((x) => x.trim())
-        .filter((x) => x.length > 0);
 
+    const images = imageText
+      .split("\n")
+      .map((x) => x.trim())
+      .filter((x) => x.length > 0);
+
+    try {
       const res = await fetch("/api/content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          header1_title: header1Title,
           header1,
+          text1_title: text1Title,
           text1,
+          header2_title: header2Title,
           header2,
+          text2_title: text2Title,
           text2,
+          images_title: imagesTitle,
           images
         })
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Failed to save");
-      }
+      if (!res.ok) setError(data.error || "Failed to save");
     } catch (e) {
-      setError("Network error while saving");
-    } finally {
-      setSaving(false);
+      setError("Network error");
     }
+
+    setSaving(false);
   };
 
   return (
@@ -94,15 +111,12 @@ export default function HomePage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontFamily: "system-ui",
         padding: "2rem"
       }}
     >
       {!unlocked ? (
         <div style={{ maxWidth: "400px", width: "100%" }}>
-          <h1 style={{ marginBottom: "1rem", textAlign: "center" }}>
-            doom access
-          </h1>
+          <h1 style={{ textAlign: "center" }}>doom access</h1>
           <input
             type="password"
             value={input}
@@ -110,125 +124,173 @@ export default function HomePage() {
             placeholder="enter phrase"
             style={{
               width: "100%",
-              padding: "0.75rem 1rem",
-              borderRadius: "4px",
-              border: "1px solid #444",
+              padding: "0.75rem",
               backgroundColor: "#111",
+              border: "1px solid #444",
               color: "#fff",
-              marginBottom: "0.75rem"
+              marginBottom: "1rem"
             }}
           />
           <button
             onClick={handleUnlock}
             style={{
               width: "100%",
-              padding: "0.75rem 1rem",
-              borderRadius: "4px",
-              border: "none",
+              padding: "0.75rem",
               backgroundColor: "#fff",
               color: "#000",
-              fontWeight: "600",
-              cursor: "pointer"
+              fontWeight: "bold"
             }}
           >
             unlock
           </button>
-          {error && (
-            <p style={{ marginTop: "0.75rem", color: "#f87171" }}>{error}</p>
-          )}
+          {error && <p style={{ color: "#f55" }}>{error}</p>}
         </div>
       ) : (
         <div style={{ maxWidth: "800px", width: "100%" }}>
-          <h1 style={{ marginBottom: "1rem" }}>kirby dreamland panel</h1>
-          {loading && <p>Loading content…</p>}
-          {error && (
-            <p style={{ marginBottom: "0.75rem", color: "#f87171" }}>{error}</p>
-          )}
+          {loading && <p>Loading…</p>}
+          {error && <p style={{ color: "#f55" }}>{error}</p>}
 
-          <section style={{ marginBottom: "1.5rem" }}>
-            <h2>Header 1</h2>
+          {/* HEADER 1 */}
+          <section style={{ marginBottom: "2rem" }}>
             <input
-              value={header1}
-              onChange={(e) => setHeader1(e.target.value)}
+              value={header1Title}
+              onChange={(e) => setHeader1Title(e.target.value)}
               style={{
                 width: "100%",
-                padding: "0.5rem 0.75rem",
-                borderRadius: "4px",
-                border: "1px solid #444",
+                padding: "0.5rem",
                 backgroundColor: "#111",
+                border: "1px solid #444",
                 color: "#fff",
-                marginTop: "0.25rem"
+                fontWeight: "bold"
               }}
             />
-            <h3 style={{ marginTop: "0.75rem" }}>Text 1</h3>
+            <textarea
+              value={header1}
+              onChange={(e) => setHeader1(e.target.value)}
+              rows={3}
+              style={{
+                width: "100%",
+                marginTop: "0.5rem",
+                padding: "0.5rem",
+                backgroundColor: "#111",
+                border: "1px solid #444",
+                color: "#fff"
+              }}
+            />
+          </section>
+
+          {/* TEXT 1 */}
+          <section style={{ marginBottom: "2rem" }}>
+            <input
+              value={text1Title}
+              onChange={(e) => setText1Title(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                backgroundColor: "#111",
+                border: "1px solid #444",
+                color: "#fff",
+                fontWeight: "bold"
+              }}
+            />
             <textarea
               value={text1}
               onChange={(e) => setText1(e.target.value)}
               rows={4}
               style={{
                 width: "100%",
-                padding: "0.5rem 0.75rem",
-                borderRadius: "4px",
-                border: "1px solid #444",
+                marginTop: "0.5rem",
+                padding: "0.5rem",
                 backgroundColor: "#111",
-                color: "#fff",
-                marginTop: "0.25rem",
-                resize: "vertical"
+                border: "1px solid #444",
+                color: "#fff"
               }}
             />
           </section>
 
-          <section style={{ marginBottom: "1.5rem" }}>
-            <h2>Header 2</h2>
+          {/* HEADER 2 */}
+          <section style={{ marginBottom: "2rem" }}>
             <input
-              value={header2}
-              onChange={(e) => setHeader2(e.target.value)}
+              value={header2Title}
+              onChange={(e) => setHeader2Title(e.target.value)}
               style={{
                 width: "100%",
-                padding: "0.5rem 0.75rem",
-                borderRadius: "4px",
-                border: "1px solid #444",
+                padding: "0.5rem",
                 backgroundColor: "#111",
+                border: "1px solid #444",
                 color: "#fff",
-                marginTop: "0.25rem"
+                fontWeight: "bold"
               }}
             />
-            <h3 style={{ marginTop: "0.75rem" }}>Text 2</h3>
+            <textarea
+              value={header2}
+              onChange={(e) => setHeader2(e.target.value)}
+              rows={3}
+              style={{
+                width: "100%",
+                marginTop: "0.5rem",
+                padding: "0.5rem",
+                backgroundColor: "#111",
+                border: "1px solid #444",
+                color: "#fff"
+              }}
+            />
+          </section>
+
+          {/* TEXT 2 */}
+          <section style={{ marginBottom: "2rem" }}>
+            <input
+              value={text2Title}
+              onChange={(e) => setText2Title(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                backgroundColor: "#111",
+                border: "1px solid #444",
+                color: "#fff",
+                fontWeight: "bold"
+              }}
+            />
             <textarea
               value={text2}
               onChange={(e) => setText2(e.target.value)}
               rows={4}
               style={{
                 width: "100%",
-                padding: "0.5rem 0.75rem",
-                borderRadius: "4px",
-                border: "1px solid #444",
+                marginTop: "0.5rem",
+                padding: "0.5rem",
                 backgroundColor: "#111",
-                color: "#fff",
-                marginTop: "0.25rem",
-                resize: "vertical"
+                border: "1px solid #444",
+                color: "#fff"
               }}
             />
           </section>
 
-          <section style={{ marginBottom: "1.5rem" }}>
-            <h2>Image URLs</h2>
-            <p style={{ fontSize: "0.85rem", color: "#aaa" }}>
-              One direct image link per line.
-            </p>
+          {/* IMAGES */}
+          <section style={{ marginBottom: "2rem" }}>
+            <input
+              value={imagesTitle}
+              onChange={(e) => setImagesTitle(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                backgroundColor: "#111",
+                border: "1px solid #444",
+                color: "#fff",
+                fontWeight: "bold"
+              }}
+            />
             <textarea
               value={imageText}
               onChange={(e) => setImageText(e.target.value)}
               rows={6}
               style={{
                 width: "100%",
-                padding: "0.5rem 0.75rem",
-                borderRadius: "4px",
-                border: "1px solid #444",
+                marginTop: "0.5rem",
+                padding: "0.5rem",
                 backgroundColor: "#111",
-                color: "#fff",
-                marginTop: "0.25rem",
-                resize: "vertical"
+                border: "1px solid #444",
+                color: "#fff"
               }}
             />
           </section>
@@ -238,11 +300,10 @@ export default function HomePage() {
             disabled={saving}
             style={{
               padding: "0.75rem 1.5rem",
-              borderRadius: "4px",
-              border: "none",
               backgroundColor: saving ? "#555" : "#fff",
               color: "#000",
-              fontWeight: "600",
+              fontWeight: "bold",
+              border: "none",
               cursor: saving ? "default" : "pointer"
             }}
           >
