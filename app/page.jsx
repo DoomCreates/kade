@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 export default function HomePage() {
   const [input, setInput] = useState("");
-  const [step, setStep] = useState(1); // 1 = first phrase, 2 = second, 3 = unlocked
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -78,7 +78,7 @@ export default function HomePage() {
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ step, phrase: input.trim() })
+        body: JSON.stringify({ step, phrase: input.trim() }),
       });
 
       const data = await res.json();
@@ -124,8 +124,8 @@ export default function HomePage() {
           text2,
           images_title: imagesTitle,
           images,
-          planner
-        })
+          planner,
+        }),
       });
 
       const data = await res.json();
@@ -137,21 +137,57 @@ export default function HomePage() {
     setSaving(false);
   };
 
+  const glass = {
+    background: "rgba(255,255,255,0.05)",
+    backdropFilter: "blur(12px)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow: "0 0 25px rgba(0,0,0,0.4)",
+    borderRadius: "12px",
+  };
+
+  const baseInputStyle = {
+    width: "100%",
+    padding: "0.75rem",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    color: "#fff",
+    borderRadius: "8px",
+    outline: "none",
+    transition: "0.2s",
+  };
+
+  const inputFocusStyle = {
+    border: "1px solid #6f6fff",
+    boxShadow: "0 0 10px #6f6fff55",
+  };
+
+  const applyFocus = (e) => {
+    Object.assign(e.target.style, inputFocusStyle);
+  };
+
+  const removeFocus = (e) => {
+    Object.assign(e.target.style, {
+      border: "1px solid rgba(255,255,255,0.15)",
+      boxShadow: "none",
+    });
+  };
+
   return (
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#000",
+        background:
+          "linear-gradient(135deg, #000 0%, #0a0a0f 40%, #0f0f1a 100%)",
         color: "#fff",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "2rem"
+        padding: "2rem",
       }}
     >
       {step !== 3 ? (
-        <div style={{ maxWidth: "400px", width: "100%" }}>
-          <h1 style={{ textAlign: "center" }}>
+        <div style={{ maxWidth: "420px", width: "100%", padding: "2rem", ...glass }}>
+          <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>
             {step === 1 ? "doom access" : "secondary access"}
           </h1>
 
@@ -160,67 +196,59 @@ export default function HomePage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleUnlock();
-              }
+              if (e.key === "Enter") handleUnlock();
             }}
             placeholder={step === 1 ? "enter first phrase" : "enter second phrase"}
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              backgroundColor: "#111",
-              border: "1px solid #444",
-              color: "#fff",
-              marginBottom: "1rem"
-            }}
+            style={baseInputStyle}
+            onFocus={applyFocus}
+            onBlur={removeFocus}
           />
 
           <button
             onClick={handleUnlock}
             style={{
+              marginTop: "1rem",
               width: "100%",
               padding: "0.75rem",
-              backgroundColor: "#fff",
+              background: "linear-gradient(90deg, #6f6fff, #9f9fff)",
               color: "#000",
-              fontWeight: "bold"
+              fontWeight: "bold",
+              borderRadius: "8px",
+              border: "none",
+              cursor: "pointer",
+              transition: "0.2s",
             }}
           >
             unlock
           </button>
 
-          {error && <p style={{ color: "#f55", marginTop: "0.75rem" }}>{error}</p>}
+          {error && (
+            <p style={{ color: "#ff6f6f", marginTop: "1rem", textAlign: "center" }}>
+              {error}
+            </p>
+          )}
         </div>
       ) : (
-        <div style={{ maxWidth: "800px", width: "100%" }}>
+        <div style={{ maxWidth: "900px", width: "100%", padding: "2rem", ...glass }}>
           {loading && <p>Loading…</p>}
-          {error && <p style={{ color: "#f55" }}>{error}</p>}
+          {error && <p style={{ color: "#ff6f6f" }}>{error}</p>}
 
           {/* HEADER 1 */}
           <section style={{ marginBottom: "2rem" }}>
             <input
               value={header1Title}
               onChange={(e) => setHeader1Title(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                backgroundColor: "#111",
-                border: "1px solid #444",
-                color: "#fff",
-                fontWeight: "bold"
-              }}
+              style={baseInputStyle}
+              onFocus={applyFocus}
+              onBlur={removeFocus}
             />
             <textarea
               value={header1}
               onChange={(e) => setHeader1(e.target.value)}
               rows={3}
-              style={{
-                width: "100%",
-                marginTop: "0.5rem",
-                padding: "0.5rem",
-                backgroundColor: "#111",
-                border: "1px solid #444",
-                color: "#fff"
-              }}
+              style={{ ...baseInputStyle, marginTop: "0.5rem" }}
+              onFocus={applyFocus}
+              onBlur={removeFocus}
             />
           </section>
 
@@ -229,27 +257,17 @@ export default function HomePage() {
             <input
               value={text1Title}
               onChange={(e) => setText1Title(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                backgroundColor: "#111",
-                border: "1px solid #444",
-                color: "#fff",
-                fontWeight: "bold"
-              }}
+              style={baseInputStyle}
+              onFocus={applyFocus}
+              onBlur={removeFocus}
             />
             <textarea
               value={text1}
               onChange={(e) => setText1(e.target.value)}
               rows={4}
-              style={{
-                width: "100%",
-                marginTop: "0.5rem",
-                padding: "0.5rem",
-                backgroundColor: "#111",
-                border: "1px solid #444",
-                color: "#fff"
-              }}
+              style={{ ...baseInputStyle, marginTop: "0.5rem" }}
+              onFocus={applyFocus}
+              onBlur={removeFocus}
             />
           </section>
 
@@ -258,27 +276,17 @@ export default function HomePage() {
             <input
               value={header2Title}
               onChange={(e) => setHeader2Title(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                backgroundColor: "#111",
-                border: "1px solid #444",
-                color: "#fff",
-                fontWeight: "bold"
-              }}
+              style={baseInputStyle}
+              onFocus={applyFocus}
+              onBlur={removeFocus}
             />
             <textarea
               value={header2}
               onChange={(e) => setHeader2(e.target.value)}
               rows={3}
-              style={{
-                width: "100%",
-                marginTop: "0.5rem",
-                padding: "0.5rem",
-                backgroundColor: "#111",
-                border: "1px solid #444",
-                color: "#fff"
-              }}
+              style={{ ...baseInputStyle, marginTop: "0.5rem" }}
+              onFocus={applyFocus}
+              onBlur={removeFocus}
             />
           </section>
 
@@ -287,27 +295,17 @@ export default function HomePage() {
             <input
               value={text2Title}
               onChange={(e) => setText2Title(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                backgroundColor: "#111",
-                border: "1px solid #444",
-                color: "#fff",
-                fontWeight: "bold"
-              }}
+              style={baseInputStyle}
+              onFocus={applyFocus}
+              onBlur={removeFocus}
             />
             <textarea
               value={text2}
               onChange={(e) => setText2(e.target.value)}
               rows={4}
-              style={{
-                width: "100%",
-                marginTop: "0.5rem",
-                padding: "0.5rem",
-                backgroundColor: "#111",
-                border: "1px solid #444",
-                color: "#fff"
-              }}
+              style={{ ...baseInputStyle, marginTop: "0.5rem" }}
+              onFocus={applyFocus}
+              onBlur={removeFocus}
             />
           </section>
 
@@ -316,27 +314,17 @@ export default function HomePage() {
             <input
               value={imagesTitle}
               onChange={(e) => setImagesTitle(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                backgroundColor: "#111",
-                border: "1px solid #444",
-                color: "#fff",
-                fontWeight: "bold"
-              }}
+              style={baseInputStyle}
+              onFocus={applyFocus}
+              onBlur={removeFocus}
             />
             <textarea
               value={imageText}
               onChange={(e) => setImageText(e.target.value)}
               rows={6}
-              style={{
-                width: "100%",
-                marginTop: "0.5rem",
-                padding: "0.5rem",
-                backgroundColor: "#111",
-                border: "1px solid #444",
-                color: "#fff"
-              }}
+              style={{ ...baseInputStyle, marginTop: "0.5rem" }}
+              onFocus={applyFocus}
+              onBlur={removeFocus}
             />
           </section>
 
@@ -350,7 +338,7 @@ export default function HomePage() {
                 style={{
                   display: "flex",
                   gap: "1rem",
-                  marginBottom: "1rem"
+                  marginBottom: "1rem",
                 }}
               >
                 <input
@@ -361,13 +349,9 @@ export default function HomePage() {
                     setPlanner(updated);
                   }}
                   placeholder={`Label ${index + 1}`}
-                  style={{
-                    width: "25%",
-                    padding: "0.5rem",
-                    backgroundColor: "#111",
-                    border: "1px solid #444",
-                    color: "#fff"
-                  }}
+                  style={{ ...baseInputStyle, width: "25%" }}
+                  onFocus={applyFocus}
+                  onBlur={removeFocus}
                 />
 
                 <input
@@ -378,13 +362,9 @@ export default function HomePage() {
                     setPlanner(updated);
                   }}
                   placeholder={`Text ${index + 1}`}
-                  style={{
-                    width: "75%",
-                    padding: "0.5rem",
-                    backgroundColor: "#111",
-                    border: "1px solid #444",
-                    color: "#fff"
-                  }}
+                  style={{ ...baseInputStyle, width: "75%" }}
+                  onFocus={applyFocus}
+                  onBlur={removeFocus}
                 />
               </div>
             ))}
@@ -395,11 +375,15 @@ export default function HomePage() {
             disabled={saving}
             style={{
               padding: "0.75rem 1.5rem",
-              backgroundColor: saving ? "#555" : "#fff",
+              background: saving
+                ? "rgba(255,255,255,0.2)"
+                : "linear-gradient(90deg, #6f6fff, #9f9fff)",
               color: "#000",
               fontWeight: "bold",
+              borderRadius: "8px",
               border: "none",
-              cursor: saving ? "default" : "pointer"
+              cursor: saving ? "default" : "pointer",
+              transition: "0.2s",
             }}
           >
             {saving ? "saving…" : "save"}
