@@ -398,4 +398,14 @@ export default function HomePage() {
               backgroundColor: saving ? "#555" : "#fff",
               color: "#000",
               fontWeight: "bold",
-              border
+              border: "none",
+              cursor: saving ? "default" : "pointer"
+            }}
+          >
+            {saving ? "saving…" : "save"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
