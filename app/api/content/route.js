@@ -28,7 +28,8 @@ export async function GET() {
       text2_title: "Text 2",
       text2: "",
       images_title: "Images",
-      images: []
+      images: [],
+      planner: Array.from({ length: 8 }, () => ({ label: "", text: "" }))
     }
   );
 }
@@ -48,7 +49,8 @@ export async function POST(request) {
     text2_title: body.text2_title,
     text2: body.text2,
     images_title: body.images_title,
-    images: body.images
+    images: body.images,
+    planner: body.planner
   };
 
   const { error } = await supabase
