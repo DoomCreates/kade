@@ -2,12 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-const FIRST_SECRET = "kirbydreamland1";
-const SECOND_SECRET = "125800ikonik";
-
 export default function HomePage() {
   const [input, setInput] = useState("");
-  const [step, setStep] = useState(1); // 1 = first phrase, 2 = second phrase, 3 = unlocked
+  const [step, setStep] = useState(1); // 1 = first phrase, 2 = second, 3 = unlocked
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -40,6 +37,12 @@ export default function HomePage() {
         const res = await fetch("/api/content");
         const data = await res.json();
 
+        if (!res.ok) {
+          setError(data.error || "Unauthorized");
+          setLoading(false);
+          return;
+        }
+
         setHeader1Title(data.header1_title);
         setHeader1(data.header1);
 
@@ -68,23 +71,32 @@ export default function HomePage() {
     load();
   }, [step]);
 
-  const handleUnlock = () => {
-    if (step === 1) {
-      if (input.trim() === FIRST_SECRET) {
+  const handleUnlock = async () => {
+    setError(null);
+
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ step, phrase: input.trim() })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Auth failed");
+        return;
+      }
+
+      if (data.nextStep === 2) {
         setStep(2);
         setInput("");
-        setError(null);
-      } else {
-        setError("Incorrect first phrase.");
-      }
-    } else if (step === 2) {
-      if (input.trim() === SECOND_SECRET) {
+      } else if (data.unlocked) {
         setStep(3);
         setInput("");
-        setError(null);
-      } else {
-        setError("Incorrect second phrase.");
       }
+    } catch (e) {
+      setError("Network error");
     }
   };
 
@@ -171,7 +183,7 @@ export default function HomePage() {
             unlock
           </button>
 
-          {error && <p style={{ color: "#f55" }}>{error}</p>}
+          {error && <p style={{ color: "#f55", marginTop: "0.75rem" }}>{error}</p>}
         </div>
       ) : (
         <div style={{ maxWidth: "800px", width: "100%" }}>
