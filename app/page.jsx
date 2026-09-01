@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 
-const SECRET = "kirbydreamland1";
+const FIRST_SECRET = "kirbydreamland1";
+const SECOND_SECRET = "125800ikonik";
 
 export default function HomePage() {
   const [input, setInput] = useState("");
-  const [unlocked, setUnlocked] = useState(false);
+  const [step, setStep] = useState(1); // 1 = first phrase, 2 = second phrase, 3 = unlocked
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -31,7 +32,7 @@ export default function HomePage() {
   );
 
   useEffect(() => {
-    if (!unlocked) return;
+    if (step !== 3) return;
 
     const load = async () => {
       setLoading(true);
@@ -65,13 +66,25 @@ export default function HomePage() {
     };
 
     load();
-  }, [unlocked]);
+  }, [step]);
 
   const handleUnlock = () => {
-    if (input.trim() === SECRET) {
-      setUnlocked(true);
-    } else {
-      setError("Incorrect phrase.");
+    if (step === 1) {
+      if (input.trim() === FIRST_SECRET) {
+        setStep(2);
+        setInput("");
+        setError(null);
+      } else {
+        setError("Incorrect first phrase.");
+      }
+    } else if (step === 2) {
+      if (input.trim() === SECOND_SECRET) {
+        setStep(3);
+        setInput("");
+        setError(null);
+      } else {
+        setError("Incorrect second phrase.");
+      }
     }
   };
 
@@ -124,14 +137,17 @@ export default function HomePage() {
         padding: "2rem"
       }}
     >
-      {!unlocked ? (
+      {step !== 3 ? (
         <div style={{ maxWidth: "400px", width: "100%" }}>
-          <h1 style={{ textAlign: "center" }}>doom access</h1>
+          <h1 style={{ textAlign: "center" }}>
+            {step === 1 ? "doom access" : "secondary access"}
+          </h1>
+
           <input
             type="password"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="enter phrase"
+            placeholder={step === 1 ? "enter first phrase" : "enter second phrase"}
             style={{
               width: "100%",
               padding: "0.75rem",
@@ -141,6 +157,7 @@ export default function HomePage() {
               marginBottom: "1rem"
             }}
           />
+
           <button
             onClick={handleUnlock}
             style={{
@@ -153,6 +170,7 @@ export default function HomePage() {
           >
             unlock
           </button>
+
           {error && <p style={{ color: "#f55" }}>{error}</p>}
         </div>
       ) : (
