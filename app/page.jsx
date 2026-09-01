@@ -137,6 +137,7 @@ export default function HomePage() {
     setSaving(false);
   };
 
+  // Glass aesthetic for unlocked vault
   const glass = {
     background: "rgba(255,255,255,0.05)",
     backdropFilter: "blur(12px)",
@@ -157,8 +158,8 @@ export default function HomePage() {
   };
 
   const inputFocusStyle = {
-    border: "1px solid #6f6fff",
-    boxShadow: "0 0 10px #6f6fff55",
+    border: "1px solid #ffffff",
+    boxShadow: "0 0 10px #ffffff55",
   };
 
   const applyFocus = (e) => {
@@ -176,8 +177,7 @@ export default function HomePage() {
     <div
       style={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #000 0%, #0a0a0f 40%, #0f0f1a 100%)",
+        backgroundColor: "#000",
         color: "#fff",
         display: "flex",
         alignItems: "center",
@@ -186,9 +186,25 @@ export default function HomePage() {
       }}
     >
       {step !== 3 ? (
-        <div style={{ maxWidth: "420px", width: "100%", padding: "2rem", ...glass }}>
-          <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-            {step === 1 ? "doom access" : "secondary access"}
+        // INTRO SCREEN — pitch black, bright white accent
+        <div
+          style={{
+            maxWidth: "420px",
+            width: "100%",
+            padding: "2rem",
+            textAlign: "center",
+          }}
+        >
+          <h1
+            style={{
+              fontSize: "2rem",
+              fontWeight: "bold",
+              color: "#fff",
+              marginBottom: "2rem",
+              letterSpacing: "2px",
+            }}
+          >
+            {step === 1 ? "ACCESS REQUIRED" : "SECOND PHRASE"}
           </h1>
 
           <input
@@ -199,9 +215,28 @@ export default function HomePage() {
               if (e.key === "Enter") handleUnlock();
             }}
             placeholder={step === 1 ? "enter first phrase" : "enter second phrase"}
-            style={baseInputStyle}
-            onFocus={applyFocus}
-            onBlur={removeFocus}
+            style={{
+              width: "100%",
+              padding: "0.75rem",
+              backgroundColor: "#000",
+              border: "1px solid #fff",
+              color: "#fff",
+              borderRadius: "8px",
+              outline: "none",
+              transition: "0.2s",
+            }}
+            onFocus={(e) =>
+              Object.assign(e.target.style, {
+                border: "1px solid #fff",
+                boxShadow: "0 0 10px #ffffff55",
+              })
+            }
+            onBlur={(e) =>
+              Object.assign(e.target.style, {
+                border: "1px solid #fff",
+                boxShadow: "none",
+              })
+            }
           />
 
           <button
@@ -210,7 +245,7 @@ export default function HomePage() {
               marginTop: "1rem",
               width: "100%",
               padding: "0.75rem",
-              background: "linear-gradient(90deg, #6f6fff, #9f9fff)",
+              backgroundColor: "#fff",
               color: "#000",
               fontWeight: "bold",
               borderRadius: "8px",
@@ -223,12 +258,11 @@ export default function HomePage() {
           </button>
 
           {error && (
-            <p style={{ color: "#ff6f6f", marginTop: "1rem", textAlign: "center" }}>
-              {error}
-            </p>
+            <p style={{ color: "#ff6f6f", marginTop: "1rem" }}>{error}</p>
           )}
         </div>
       ) : (
+        // UNLOCKED VAULT — glass aesthetic
         <div style={{ maxWidth: "900px", width: "100%", padding: "2rem", ...glass }}>
           {loading && <p>Loading…</p>}
           {error && <p style={{ color: "#ff6f6f" }}>{error}</p>}
