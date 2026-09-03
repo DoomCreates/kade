@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "../../../lib/supabaseServer";
-import { checkSession } from "../../../lib/checkSession";
+import { checkSession } from "../../../lib/session";
+import { sanitizeEventPayload } from "../../../lib/validate";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function GET(request) {
   if (!checkSession(request)) {
@@ -13,10 +16,7 @@ export async function GET(request) {
     .select("*")
     .order("event_date", { ascending: true });
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data || []);
 }
 
@@ -26,26 +26,20 @@ export async function POST(request) {
   }
 
   const body = await request.json();
+  const result = sanitizeEventPayload(body);
 
-  if (!body.event_date || !body.title) {
-    return NextResponse.json({ error: "event_date and title are required" }, { status: 400 });
+  if (result.error) {
+    return NextResponse.json({ error: result.error }, { status: 400 });
   }
 
   const supabase = createSupabaseServerClient();
   const { data, error } = await supabase
     .from("events")
-    .insert({
-      event_date: body.event_date,
-      title: body.title,
-      notes: body.notes || "",
-    })
+    .insert(result.value)
     .select()
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
 }
 
@@ -55,8 +49,8 @@ export async function PATCH(request) {
   }
 
   const body = await request.json();
-  if (!body.id) {
-    return NextResponse.json({ error: "id is required" }, { status: 400 });
+  if (!body.id || !UUID_RE.test(body.id)) {
+    return NextResponse.json({ error: "Valid id is required" }, { status: 400 });
   }
 
   const supabase = createSupabaseServerClient();
@@ -65,10 +59,7 @@ export async function PATCH(request) {
     .update({ done: !!body.done })
     .eq("id", body.id);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }
 
@@ -79,16 +70,17 @@ export async function DELETE(request) {
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
-  if (!id) {
-    return NextResponse.json({ error: "id is required" }, { status: 400 });
+
+  if (!id || !UUID_RE.test(id)) {
+    return NextResponse.json({ error: "Valid id is required" }, { status: 400 });
   }
 
   const supabase = createSupabaseServerClient();
-  const { error } = await supabase.from("events").delete().eq("id", id);
+  const { error } = await supabase
+    .from("events")
+    .delete()
+    .eq("id", id);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }
