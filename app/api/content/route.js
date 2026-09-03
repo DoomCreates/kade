@@ -1,17 +1,9 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "../../../lib/supabaseServer";
+import { checkSession } from "../../../lib/session";
+import { sanitizeContentPayload } from "../../../lib/validate";
 
 const SINGLE_ROW_ID = 1;
-
-function checkSession(request) {
-  const sessionToken = process.env.VAULT_SESSION_TOKEN;
-  if (!sessionToken) return false;
-
-  const cookie = request.cookies.get("vault_session");
-  if (!cookie) return false;
-
-  return cookie.value === sessionToken;
-}
 
 export async function GET(request) {
   if (!checkSession(request)) {
@@ -62,20 +54,7 @@ export async function POST(request) {
   const body = await request.json();
   const supabase = createSupabaseServerClient();
 
-  const payload = {
-    id: SINGLE_ROW_ID,
-    header1_title: body.header1_title,
-    header1: body.header1,
-    text1_title: body.text1_title,
-    text1: body.text1,
-    header2_title: body.header2_title,
-    header2: body.header2,
-    text2_title: body.text2_title,
-    text2: body.text2,
-    images_title: body.images_title,
-    images: body.images,
-    planner: body.planner
-  };
+  const payload = { id: SINGLE_ROW_ID, ...sanitizeContentPayload(body) };
 
   const { error } = await supabase
     .from("content")
