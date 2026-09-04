@@ -72,7 +72,7 @@ function Card({ children, style }) {
 }
 
 function LiveClock() {
-  const [now, setNow] = useState(null); // null until mounted, avoids SSR/client time mismatch
+  const [now, setNow] = useState(null);
 
   useEffect(() => {
     setNow(new Date());
@@ -88,8 +88,8 @@ function LiveClock() {
   const minutes = now.getMinutes();
   const seconds = now.getSeconds();
 
-  const hourAngle = (hours + minutes / 60) * 30; // 360/12
-  const minuteAngle = (minutes + seconds / 60) * 6; // 360/60
+  const hourAngle = (hours + minutes / 60) * 30;
+  const minuteAngle = (minutes + seconds / 60) * 6;
   const secondAngle = seconds * 6;
 
   const center = 80;
@@ -207,7 +207,6 @@ export default function HomePage() {
     Array.from({ length: 8 }, () => ({ label: "", text: "" }))
   );
 
-  // --- Calendar / events state ---
   const [events, setEvents] = useState([]);
   const [viewDate, setViewDate] = useState(() => new Date());
   const [selectedDay, setSelectedDay] = useState(null);
@@ -314,8 +313,6 @@ export default function HomePage() {
     }
     setSaving(false);
   };
-
-  // --- Calendar helpers ---
 
   const eventsByDate = useMemo(() => {
     const map = {};
@@ -424,8 +421,6 @@ export default function HomePage() {
     ? eventsByDate[toISODate(selectedDay)] || []
     : [];
 
-  // --- Render ---
-
   if (step !== 3) {
     return (
       <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
@@ -471,7 +466,6 @@ export default function HomePage() {
         {loading && <p style={{ color: theme.textDim }}>Loading…</p>}
         {error && <p style={{ color: theme.danger }}>{error}</p>}
 
-        {/* ALERTS STRIP */}
         <Card>
           <Label>Upcoming</Label>
           {alerts.length === 0 ? (
@@ -503,7 +497,6 @@ export default function HomePage() {
           )}
         </Card>
 
-        {/* CALENDAR */}
         <Card>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
             <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))} style={navButton}>‹</button>
@@ -553,3 +546,150 @@ export default function HomePage() {
               ) : (
                 selectedDayEvents.map((ev) => (
                   <div key={ev.id} style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", fontSize: "0.85rem", opacity: ev.done ? 0.5 : 1 }}>
+                    <span>{ev.title}{ev.notes ? ` — ${ev.notes}` : ""}</span>
+                    <button onClick={() => deleteEvent(ev.id)} style={pillButton}>×</button>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          <button
+            onClick={() => setShowAddForm((v) => !v)}
+            style={{
+              marginTop: "1rem", padding: "0.6rem 1rem", borderRadius: theme.radius,
+              border: `1px solid ${theme.border}`, background: "transparent", color: theme.text, cursor: "pointer", fontSize: "0.85rem",
+            }}
+          >
+            {showAddForm ? "cancel" : "+ add reminder"}
+          </button>
+
+          {showAddForm && (
+            <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <div>
+                <Label>Date</Label>
+                <input
+                  value={dateQuery}
+                  onChange={(e) => handleDateQueryChange(e.target.value)}
+                  placeholder='e.g. "thursday, september 3rd"'
+                  style={inputBase}
+                  onFocus={applyFocus}
+                  onBlur={removeFocus}
+                />
+                {parsedDate && (
+                  <p style={{ fontSize: "0.8rem", color: theme.accent, marginTop: "0.4rem" }}>
+                    → {formatFriendly(parsedDate)}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label>Title</Label>
+                <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} style={inputBase} onFocus={applyFocus} onBlur={removeFocus} />
+              </div>
+
+              <div>
+                <Label>Notes</Label>
+                <textarea value={newNotes} onChange={(e) => setNewNotes(e.target.value)} rows={2} style={inputBase} onFocus={applyFocus} onBlur={removeFocus} />
+              </div>
+
+              {dateQueryError && <p style={{ color: theme.danger, fontSize: "0.85rem" }}>{dateQueryError}</p>}
+
+              <button
+                onClick={handleSaveEvent}
+                disabled={savingEvent}
+                style={{
+                  padding: "0.65rem", borderRadius: theme.radius, border: "none",
+                  background: savingEvent ? "rgba(255,255,255,0.2)" : theme.text,
+                  color: "#000", fontWeight: 600, cursor: savingEvent ? "default" : "pointer",
+                }}
+              >
+                {savingEvent ? "saving…" : "save reminder"}
+              </button>
+            </div>
+          )}
+        </Card>
+
+        <Card>
+          <Label>{header1Title}</Label>
+          <input value={header1Title} onChange={(e) => setHeader1Title(e.target.value)} style={{ ...inputBase, marginBottom: "0.5rem" }} onFocus={applyFocus} onBlur={removeFocus} />
+          <textarea value={header1} onChange={(e) => setHeader1(e.target.value)} rows={3} style={inputBase} onFocus={applyFocus} onBlur={removeFocus} />
+        </Card>
+
+        <Card>
+          <input value={text1Title} onChange={(e) => setText1Title(e.target.value)} style={{ ...inputBase, marginBottom: "0.5rem" }} onFocus={applyFocus} onBlur={removeFocus} />
+          <textarea value={text1} onChange={(e) => setText1(e.target.value)} rows={4} style={inputBase} onFocus={applyFocus} onBlur={removeFocus} />
+        </Card>
+
+        <Card>
+          <input value={header2Title} onChange={(e) => setHeader2Title(e.target.value)} style={{ ...inputBase, marginBottom: "0.5rem" }} onFocus={applyFocus} onBlur={removeFocus} />
+          <textarea value={header2} onChange={(e) => setHeader2(e.target.value)} rows={3} style={inputBase} onFocus={applyFocus} onBlur={removeFocus} />
+        </Card>
+
+        <Card>
+          <input value={text2Title} onChange={(e) => setText2Title(e.target.value)} style={{ ...inputBase, marginBottom: "0.5rem" }} onFocus={applyFocus} onBlur={removeFocus} />
+          <textarea value={text2} onChange={(e) => setText2(e.target.value)} rows={4} style={inputBase} onFocus={applyFocus} onBlur={removeFocus} />
+        </Card>
+
+        <Card>
+          <input value={imagesTitle} onChange={(e) => setImagesTitle(e.target.value)} style={{ ...inputBase, marginBottom: "0.5rem" }} onFocus={applyFocus} onBlur={removeFocus} />
+          <textarea value={imageText} onChange={(e) => setImageText(e.target.value)} rows={5} style={inputBase} onFocus={applyFocus} onBlur={removeFocus} />
+        </Card>
+
+        <Card>
+          <Label>Planner</Label>
+          {planner.map((row, index) => (
+            <div key={index} style={{ display: "flex", gap: "0.75rem", marginBottom: "0.6rem" }}>
+              <input
+                value={row.label}
+                onChange={(e) => {
+                  const updated = [...planner];
+                  updated[index].label = e.target.value;
+                  setPlanner(updated);
+                }}
+                placeholder={`Label ${index + 1}`}
+                style={{ ...inputBase, width: "28%" }}
+                onFocus={applyFocus}
+                onBlur={removeFocus}
+              />
+              <input
+                value={row.text}
+                onChange={(e) => {
+                  const updated = [...planner];
+                  updated[index].text = e.target.value;
+                  setPlanner(updated);
+                }}
+                placeholder={`Text ${index + 1}`}
+                style={{ ...inputBase, width: "72%" }}
+                onFocus={applyFocus}
+                onBlur={removeFocus}
+              />
+            </div>
+          ))}
+        </Card>
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          style={{
+            padding: "0.75rem 1.5rem", borderRadius: theme.radius, border: "none",
+            background: saving ? "rgba(255,255,255,0.2)" : theme.text,
+            color: "#000", fontWeight: 600, cursor: saving ? "default" : "pointer",
+          }}
+        >
+          {saving ? "saving…" : "save vault"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const navButton = {
+  background: "transparent", border: "none", color: theme.text,
+  fontSize: "1.2rem", cursor: "pointer", padding: "0.2rem 0.6rem",
+};
+
+const pillButton = {
+  background: "rgba(255,255,255,0.08)", border: "none", color: theme.text,
+  borderRadius: "6px", width: "24px", height: "24px", cursor: "pointer", fontSize: "0.8rem",
+};
